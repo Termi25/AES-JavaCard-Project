@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="klinec.jcardsim" type="repository">
+    <properties maven-id="com.klinec:jcardsim:3.0.6.0" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/klinec/jcardsim/3.0.6.0/jcardsim-3.0.6.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/ow2/asm/asm-commons/7.2/asm-commons-7.2.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/ow2/asm/asm/7.2/asm-7.2.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/ow2/asm/asm-tree/7.2/asm-tree-7.2.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/ow2/asm/asm-util/7.2/asm-util-7.2.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/ow2/asm/asm-analysis/7.2/asm-analysis-7.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
