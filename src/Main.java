@@ -45,50 +45,51 @@ public class Main {
 //        }
 
 
-        File file=new File("test.txt");
-        File outputFile=new File("EncryptedFile.enc");
+        File file = new File("test.txt");
+        File outputFile = new File("EncryptedFile.enc");
+        File decryptedFile = new File("testDec.txt");
 
-        if(file.exists()){
-            FileInputStream fis=new FileInputStream(file);
-            BufferedInputStream bis=new BufferedInputStream(fis);
+        encryptFile(simulator, file, outputFile,true);
 
-            FileOutputStream fos=new FileOutputStream(outputFile);
-            BufferedOutputStream bos=new BufferedOutputStream(fos);
+        encryptFile(simulator, outputFile, decryptedFile,false);
 
-            byte[] buffer=new byte[32];
+    }
+
+    public static void encryptFile(CardSimulator simulator, File inputFile, File outputFile, boolean isEncrypting) throws IOException {
+        if (inputFile.exists()) {
+            byte claAESMode=0x00;
+            if(isEncrypting){
+                claAESMode=0x10;
+            }
+            FileInputStream fis = new FileInputStream(inputFile);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+
+            FileOutputStream fos = new FileOutputStream(outputFile);
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+
+            byte[] buffer = new byte[32];
             bis.read(buffer);
-            CommandAPDU commandAPDU = new CommandAPDU(0x00, 0x10, 0x00, 0x00, buffer);
+            CommandAPDU commandAPDU = new CommandAPDU(claAESMode, 0x20, 0x00, 0x00, buffer);
             ResponseAPDU response = simulator.transmitCommand(commandAPDU);
             bos.write(response.getData());
 
-            buffer=new byte[16];
+            buffer = new byte[16];
 
-            while(true){
-                int noBytes=bis.read(buffer);
-                if(noBytes==-1){
+            while (true) {
+                int noBytes = bis.read(buffer);
+                if (noBytes == -1) {
                     break;
                 }
-                commandAPDU = new CommandAPDU(0x00, 0x10, 0x00, 0x00, buffer);
+                commandAPDU = new CommandAPDU(claAESMode, 0x20, 0x00, 0x00, buffer);
                 response = simulator.transmitCommand(commandAPDU);
                 bos.write(response.getData());
             }
-            commandAPDU = new CommandAPDU(0x00, 0x20, 0x00, 0x00, buffer);
+            commandAPDU = new CommandAPDU(claAESMode, 0x30, 0x00, 0x00, buffer);
             response = simulator.transmitCommand(commandAPDU);
             bos.write(response.getData());
 
             bis.close();
             bos.close();
-        }
-
-        if(outputFile.exists()){
-            FileInputStream fis=new FileInputStream(file);
-            BufferedInputStream bis=new BufferedInputStream(fis);
-
-            byte[] buffer=new byte[16];
-            int noBytes=bis.read(buffer);
-            for(byte b:buffer){
-                System.out.printf("%02X",b);
-            }
         }
     }
 }
