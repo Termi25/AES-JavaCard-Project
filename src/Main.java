@@ -5,6 +5,8 @@ import javacard.framework.AID;
 import javax.smartcardio.CommandAPDU;
 import javax.smartcardio.ResponseAPDU;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 
 public class Main {
@@ -67,26 +69,24 @@ public class Main {
             FileOutputStream fos = new FileOutputStream(outputFile);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
 
-            byte[] buffer = new byte[32];
-            bis.read(buffer);
-            CommandAPDU commandAPDU = new CommandAPDU(claAESMode, 0x20, 0x00, 0x00, buffer);
-            ResponseAPDU response = simulator.transmitCommand(commandAPDU);
-            bos.write(response.getData());
 
-            buffer = new byte[16];
+            byte[] buffer = new byte[16];
 
             while (true) {
+                buffer = new byte[16];
                 int noBytes = bis.read(buffer);
                 if (noBytes == -1) {
                     break;
                 }
-                commandAPDU = new CommandAPDU(claAESMode, 0x20, 0x00, 0x00, buffer);
-                response = simulator.transmitCommand(commandAPDU);
+                CommandAPDU commandAPDU=null;
+                if(noBytes < 16){
+                    commandAPDU = new CommandAPDU(claAESMode, 0x30, 0x00, 0x00, buffer);
+                }else{
+                    commandAPDU = new CommandAPDU(claAESMode, 0x20, 0x00, 0x00, buffer);
+                }
+                ResponseAPDU response = simulator.transmitCommand(commandAPDU);
                 bos.write(response.getData());
             }
-            commandAPDU = new CommandAPDU(claAESMode, 0x30, 0x00, 0x00, buffer);
-            response = simulator.transmitCommand(commandAPDU);
-            bos.write(response.getData());
 
             bis.close();
             bos.close();
