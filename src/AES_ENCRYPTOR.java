@@ -54,9 +54,8 @@ public class AES_ENCRYPTOR extends Applet{
     public static void applyAES(APDU apdu)
     {
         byte[] buffer = apdu.getBuffer();
-        apdu.setIncomingAndReceive();
-        short len = (short) (buffer[ISO7816.OFFSET_LC] & 0x00FF);
-
+        short len = apdu.setIncomingAndReceive();
+        short claMode=buffer[ISO7816.OFFSET_CLA];
         switch (buffer[ISO7816.OFFSET_INS]) {
             case INS_SET_KEY:
                 aesKey.setKey(buffer, ISO7816.OFFSET_CDATA);

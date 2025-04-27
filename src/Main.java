@@ -47,9 +47,9 @@ public class Main {
 //        }
 
 
-        File file = new File("test.txt");
+        File file = new File("TankMemeTigerCat.pdf");
         File outputFile = new File("EncryptedFile.enc");
-        File decryptedFile = new File("testDec.txt");
+        File decryptedFile = new File("TankMemeTigerCatDec.pdf");
 
         encryptFile(simulator, file, outputFile,true);
 
@@ -70,7 +70,7 @@ public class Main {
             BufferedOutputStream bos = new BufferedOutputStream(fos);
 
 
-            byte[] buffer = new byte[16];
+            byte[] buffer = null;
 
             while (true) {
                 buffer = new byte[16];
@@ -78,16 +78,34 @@ public class Main {
                 if (noBytes == -1) {
                     break;
                 }
+
                 CommandAPDU commandAPDU=null;
+                ResponseAPDU response=null;
                 if(noBytes < 16){
                     commandAPDU = new CommandAPDU(claAESMode, 0x30, 0x00, 0x00, buffer);
+                    response = simulator.transmitCommand(commandAPDU);
+                    if(!isEncrypting) {
+                        byte[] data = response.getData();
+                        short noTillPadding = 0;
+                        for (int i = 0; i < 16; i++) {
+                            noTillPadding++;
+                            if (data[i] == 0x00) {
+                                break;
+                            }
+                        }
+                        byte[] dataNew = new byte[noTillPadding - 1];
+                        for (int i = 0; i < noTillPadding - 1; i++) {
+                            dataNew[i] = data[i];
+                        }
+                        bos.write(dataNew);
+                    }
+                    bos.write(response.getData());
                 }else{
                     commandAPDU = new CommandAPDU(claAESMode, 0x20, 0x00, 0x00, buffer);
+                    response = simulator.transmitCommand(commandAPDU);
+                    bos.write(response.getData());
                 }
-                ResponseAPDU response = simulator.transmitCommand(commandAPDU);
-                bos.write(response.getData());
             }
-
             bis.close();
             bos.close();
         }

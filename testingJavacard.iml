@@ -41,5 +41,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="bouncycastle.bcjmail.jdk18on" level="project" />
   </component>
 </module>
