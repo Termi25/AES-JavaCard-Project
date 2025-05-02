@@ -5,108 +5,98 @@ import javacard.framework.AID;
 import javax.smartcardio.CommandAPDU;
 import javax.smartcardio.ResponseAPDU;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 
 public class Main {
+    public static final byte ENCRYPT = 0x00;
+    public static final byte DECRYPT = 0x10;
+
     public static void main(String[] args) throws IOException {
-//        CardSimulator simulator = new CardSimulator();
-//
-//// 2. install applet
-//        AID appletAID = AIDUtil.create("F000000001");
-//        simulator.installApplet(appletAID, TestApplet.class);
-//
-//// 3. select applet
-//        simulator.selectApplet(appletAID);
-//
-//// 4. send APDU
-//        CommandAPDU commandAPDU = new CommandAPDU(0x00, 0x00, 0x00, 0x00,new byte[]{(byte) 0xFF,0x03});
-//        ResponseAPDU response = simulator.transmitCommand(commandAPDU);
-//
-//// 5. check response
-//        byte[] array= response.getData();
-//        for(byte set:array){
-//            System.out.printf("%02X ",set);
-//        }
         CardSimulator simulator = new CardSimulator();
 
         AID appletAID = AIDUtil.create("F000000001");
-        simulator.installApplet(appletAID, AES_ENCRYPTOR.class);
+        simulator.installApplet(appletAID, AES_Applet.class);
 
         simulator.selectApplet(appletAID);
-//        byte[] buffer=new byte[]{0x2d, 0x2a, 0x2d, 0x42, 0x55, 0x49, 0x4c, 0x44, 0x41, 0x43, 0x4f, 0x44, 0x45, 0x2d, 0x2a, 0x2d};
-//        for(byte b: buffer){
-//            System.out.printf("%02X",b);
-//        }
-//        System.out.println();
-//        CommandAPDU commandAPDU = new CommandAPDU(0x00, 0x00, 0x00, 0x00, buffer);
-//        ResponseAPDU response = simulator.transmitCommand(commandAPDU);
-//        for(byte b: response.getData()){
-//            System.out.printf("%02X ",b);
-//        }
 
+        File folder = new File("testFiles");
+        if(!folder.isDirectory()){
+            System.out.println("Test folder does not exists. Add a test folder with this name in project root: testFiles");
+            return;
+        }
 
-        File file = new File("TankMemeTigerCat.pdf");
-        File outputFile = new File("EncryptedFile.enc");
-        File decryptedFile = new File("TankMemeTigerCatDec.pdf");
+        for (File file : folder.listFiles()) {
+            if (file.isDirectory()) {
+                continue;
+            }
+            if (file.getName().endsWith(".enc") || file.getName().startsWith("Decrypted_")) {
+                continue;
+            }
 
-        encryptFile(simulator, file, outputFile,true);
+            File encFile = new File(folder, file.getName().split("\\.")[0] + ".enc");
+            encryptFile(simulator, file, encFile, true);
 
-        encryptFile(simulator, outputFile, decryptedFile,false);
-
+            File decFile = new File(folder, "Decrypted_" + file.getName());
+            encryptFile(simulator, encFile, decFile, false);
+        }
     }
 
     public static void encryptFile(CardSimulator simulator, File inputFile, File outputFile, boolean isEncrypting) throws IOException {
         if (inputFile.exists()) {
-            byte claAESMode=0x00;
-            if(isEncrypting){
-                claAESMode=0x10;
+
+            byte claAESMode = ENCRYPT;
+            if (isEncrypting) {
+                claAESMode = DECRYPT;
             }
+
             FileInputStream fis = new FileInputStream(inputFile);
-            BufferedInputStream bis = new BufferedInputStream(fis);
 
             FileOutputStream fos = new FileOutputStream(outputFile);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
 
+            byte[] buffer = fis.readAllBytes();
+            int offset = 0;
+            while (offset < buffer.length) {
+                int remainingBytes = buffer.length - offset;
+                boolean lastBlock = (remainingBytes <= 16);
 
-            byte[] buffer = null;
+                ResponseAPDU response = null;
+                if (lastBlock) {
+                    byte[] lastDataBlock = new byte[16];
+                    System.arraycopy(buffer, offset, lastDataBlock, 0, remainingBytes);
 
-            while (true) {
-                buffer = new byte[16];
-                int noBytes = bis.read(buffer);
-                if (noBytes == -1) {
-                    break;
-                }
-
-                CommandAPDU commandAPDU=null;
-                ResponseAPDU response=null;
-                if(noBytes < 16){
-                    commandAPDU = new CommandAPDU(claAESMode, 0x30, 0x00, 0x00, buffer);
-                    response = simulator.transmitCommand(commandAPDU);
-                    if(!isEncrypting) {
-                        byte[] data = response.getData();
-                        short noTillPadding = 0;
-                        for (int i = 0; i < 16; i++) {
-                            noTillPadding++;
-                            if (data[i] == 0x00) {
-                                break;
+                    if (isEncrypting) {
+                        int padding = 16 - remainingBytes;
+                        if (padding > 0 && padding < 16) {
+                            for (int i = remainingBytes; i < 16; i++) {
+                                lastDataBlock[i] = (byte) padding;
                             }
                         }
-                        byte[] dataNew = new byte[noTillPadding - 1];
-                        for (int i = 0; i < noTillPadding - 1; i++) {
-                            dataNew[i] = data[i];
+                        response = simulator.transmitCommand(new CommandAPDU(claAESMode,0x20,0x00,0x00,lastDataBlock));
+                        bos.write(response.getData());
+
+                    } else {
+                        response = simulator.transmitCommand(new CommandAPDU(claAESMode,0x20,0x00,0x00,lastDataBlock));
+
+                        lastDataBlock = response.getData();
+
+                        int padding = lastDataBlock[15];
+                        if(padding > 0 && padding < 16){
+                            bos.write(lastDataBlock, 0, 16 - padding);
+                        }else{
+                            bos.write(lastDataBlock);
                         }
-                        bos.write(dataNew);
                     }
-                    bos.write(response.getData());
-                }else{
-                    commandAPDU = new CommandAPDU(claAESMode, 0x20, 0x00, 0x00, buffer);
-                    response = simulator.transmitCommand(commandAPDU);
+                } else {
+                    byte[] dataBlock = new byte[16];
+                    System.arraycopy(buffer, offset, dataBlock, 0, 16);
+                    response = simulator.transmitCommand(new CommandAPDU(claAESMode,0x10,0x00,0x00,dataBlock));
                     bos.write(response.getData());
                 }
+                offset += 16;
             }
-            bis.close();
+
+            fis.close();
             bos.close();
         }
     }
