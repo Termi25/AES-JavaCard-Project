@@ -20,7 +20,7 @@ import java.util.Arrays;
  * 0x10 | P_START (Encrypt/Decrypt 128bit blocks of data with AES CBC)
  * 0x20 | INS_P_END (Encrypt/Decrypt the last block of data with AES CBC)
  */
-public class AES_Applet extends Applet {
+public class AESApplet extends Applet {
 
     /*-----Command Constants-----*/
     public static final byte INS_SET_ENCRYPT = 0x00;
@@ -41,7 +41,7 @@ public class AES_Applet extends Applet {
     private static final int BYTE_LENGTH = 16;
 
     /** This is the Class Constructor used for initialising Fields kept in EEPROM.*/
-    private AES_Applet() {
+    private AESApplet() {
         /* create cipher object */
         aesCipher = Cipher.getInstance(Cipher.ALG_AES_BLOCK_128_CBC_NOPAD, false);
 
@@ -53,7 +53,7 @@ public class AES_Applet extends Applet {
 
     /** This is the method used when first installing the Applet on the Java Card. */
     public static void install(byte[] bArray, short bOffset, byte BLength) {
-        new AES_Applet();
+        new AESApplet();
     }
 
     @Override

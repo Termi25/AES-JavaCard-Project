@@ -22,7 +22,7 @@ public class Main {
         /*-----Card Applet Creation, Registration & Selection for use-----*/
 
         AID appletAID = AIDUtil.create("F000000001");
-        simulator.installApplet(appletAID, AES_Applet.class);
+        simulator.installApplet(appletAID, AESApplet.class);
 
         simulator.selectApplet(appletAID);
 
