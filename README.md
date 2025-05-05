@@ -1,4 +1,4 @@
-# Blockchain, quantum cryptography and E-Payment Security / E-Commerce Project      
+# Blockchain, quantum cryptography and E-Payment/ E-Commerce Security Project      
 
 ## Description
 
