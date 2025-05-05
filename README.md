@@ -52,7 +52,7 @@ Use the `create_cap.bat` or `create_cap.sh` script to create the CAP file from t
 
 Use the `test_host.bat` or `test_host.sh` script to run the host application and test the Java Card applet. The script will compile the host application and run it, allowing you to encrypt and decrypt the test files using the applet.
 
-Otherwise, you can simply open this project in an Intellij Idea Client and run the Host.java file. This is a much simpler way of checking out the functionality, especially for those not adept at working with javac.exe and converter.bat.
+Otherwise, you can simply open this project in an `Intellij Idea Client` and run the `Host.java` file. This is a much simpler way of checking out the functionality, especially for those not adept at working with `javac.exe` and `converter.bat`.
 
 > [!IMPORTANT]
 > Make sure to set the environment variables (`JAVA_HOME`) according to your own setup.
