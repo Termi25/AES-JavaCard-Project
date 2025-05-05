@@ -7,7 +7,7 @@ import javax.smartcardio.ResponseAPDU;
 import java.io.*;
 
 /** An example host for testing the AES_Applet using jCardSim. */
-public class Main {
+public class Host {
 
     /*-----APDU Contract Mode Modifiers (see PQC_Applet)*/
     public static final byte ENCRYPT = 0x00;
@@ -28,9 +28,9 @@ public class Main {
 
         /*-----Initialising Test Folder Root-----*/
 
-        File folder = new File("testFiles");
+        File folder = new File("test_files");
         if(!folder.isDirectory()){
-            System.out.println("Test folder does not exists. Add a test folder with this name in project root: testFiles");
+            System.out.println("Test folder does not exists. Add a test folder with this name in project root: test_files");
             return;
         }
 
