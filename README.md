@@ -4,7 +4,7 @@
 
 This project contains a Java Card applet that implements AES CBC with PKCS#7 Padding encryption and decryption for files. The project includes the source code for both the Java Card applet and the host application (See the src Folder). Also, this project can be run as an Intellij Idea Project for ease of use.
 
-## Requirement
+## Requirements
 
 Create a Java Card applet using JavaCard 3.2.0+ API for the following requirements:
 
